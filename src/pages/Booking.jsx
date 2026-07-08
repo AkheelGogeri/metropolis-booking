@@ -231,9 +231,9 @@ function Booking() {
               </div>
 
               {/* Corporate Event Extra Fields */}
-              {isCorporate && (
+              {true && (
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-4">
-                  <p className="text-sm font-semibold text-gray-700">Corporate Booking Details</p>
+                  <p className="text-sm font-semibold text-gray-700">Additional Details (Optional)</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
@@ -271,12 +271,16 @@ function Booking() {
                   <option value="">-- Select a Venue --</option>
                   <optgroup label="Banquet Halls">
                     {venues.filter(v => v.type === "Banquet Hall").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — up to {v.capacity} guests</option>
+                      <option key={v.id} value={v.name}>
+                         {v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} guests
+                      </option>
                     ))}
                   </optgroup>
                   <optgroup label="Meeting Rooms">
                     {venues.filter(v => v.type === "Meeting Room").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — up to {v.capacity} people</option>
+                      <option key={v.id} value={v.name}>
+                        {v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} people
+                      </option>
                     ))}
                   </optgroup>
                 </select>
@@ -330,7 +334,7 @@ function Booking() {
                     <option value="">-- Select --</option>
                     <option>Veg</option>
                     <option>Non Veg</option>
-                    <option>Both</option>
+                    <option>Mix</option>
                   </select>
                 </div>
                 <div>
@@ -338,8 +342,8 @@ function Booking() {
                   <select name="setupStyle" required value={form.setupStyle} onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
                     <option value="">-- Select --</option>
-                    <option>Dining</option>
-                    <option>Reception</option>
+                    <option>Cluster</option>
+                    <option>Round Table</option>
                     <option>Theater</option>
                     <option>U Shape</option>
                     <option>Classroom</option>

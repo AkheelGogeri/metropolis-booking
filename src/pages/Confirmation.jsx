@@ -105,7 +105,23 @@ function Confirmation() {
         </p>
 
       </div>
-
+    {/* Terms & Conditions */}
+    <div className="mt-12 text-left bg-gray-50 border border-gray-200 rounded-2xl p-6">
+      <h3 className="font-bold text-gray-800 mb-4 text-center">Terms & Conditions</h3>
+      <div className="space-y-3 text-xs text-gray-500">
+        <p><span className="font-semibold text-gray-700">1. Booking Confirmation:</span> Booking confirmed only upon receipt of advance payment and written confirmation.</p>
+        <p><span className="font-semibold text-gray-700">2. GST:</span> Applicable GST will be charged extra as per Government regulations.</p>
+        <p><span className="font-semibold text-gray-700">3. Guest Count:</span> Final guaranteed guest count must be shared 48 hours prior to the event. Billing based on confirmed count or actual attendance, whichever is higher.</p>
+        <p><span className="font-semibold text-gray-700">4. Venue & Timing:</span> Hall reserved only for agreed timings. Additional usage will attract extra charges.</p>
+        <p><span className="font-semibold text-gray-700">5. Food & Beverage:</span> Outside food and beverages not permitted unless prior written approval is obtained.</p>
+        <p><span className="font-semibold text-gray-700">6. Decorations:</span> External vendor decorations require prior approval. Damage to hotel property will be recovered from client.</p>
+        <p><span className="font-semibold text-gray-700">7. Parking:</span> Subject to availability and provided at owner's risk.</p>
+        <p><span className="font-semibold text-gray-700">8. Cancellation:</span> Advance payments are non-refundable unless approved by management.</p>
+        <p><span className="font-semibold text-gray-700">9. Damage & Liability:</span> Client responsible for any loss or damage caused by guests or vendors during the event.</p>
+        <p><span className="font-semibold text-gray-700">10. Force Majeure:</span> Hotel not liable for cancellation due to natural disasters, government restrictions or unforeseen circumstances.</p>
+        <p><span className="font-semibold text-gray-700">11. Acceptance:</span> Payment of advance shall be deemed as acceptance of all terms and conditions.</p>
+      </div>
+    </div>
       <Footer />
     </div>
   )

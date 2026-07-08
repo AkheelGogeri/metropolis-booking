@@ -53,6 +53,10 @@ function Venues() {
                     <p className="font-bold text-gray-800">Up to {venue.capacity} guests</p>
                   </div>
                   <div className="bg-white rounded-lg p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400">Air Conditioning</p>
+                    <p className="font-bold text-gray-800">{venue.ac ? '❄️ AC' : '🌀 Non-AC'}</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-gray-100">
                     <p className="text-xs text-gray-400">Starting from</p>
                     <p className="font-bold text-amber-600">₹{venue.price.toLocaleString()}</p>
                   </div>
