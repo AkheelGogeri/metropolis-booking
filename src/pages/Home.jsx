@@ -14,7 +14,7 @@ function Home() {
       {/* Hero Section */}
       <div className="relative h-[90vh] flex items-center justify-center text-center"
         style={{
-          backgroundImage: "url('https://hotelmetropolishubli.in/wp-content/uploads/2021/09/METROPOLIS-WEDDING-HALLS-1.jpg')",
+          backgroundImage: "url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1600')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}>
