@@ -20,14 +20,8 @@ function Navbar() {
           <Link to="/venues" className="text-gray-700 hover:text-amber-600 font-medium transition">
             Venues
           </Link>
-          <Link to="/booking" className="text-gray-700 hover:text-amber-600 font-medium transition">
+          <Link to="/contact" className="text-gray-700 hover:text-amber-600 font-medium transition">
             Contact
-          </Link>
-          <Link
-            to="/booking"
-            className="bg-amber-600 text-white px-5 py-2 rounded-lg hover:bg-amber-700 font-medium transition"
-          >
-            Book Now
           </Link>
         </div>
 
