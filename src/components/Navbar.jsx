@@ -25,13 +25,15 @@ function Navbar() {
           </Link>
         </div>
 
-        <div className="md:hidden">
-          <Link
-            to="/booking"
-            className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
-          >
-            Book Now
+        <div className="md:hidden flex items-center gap-3">
+          <Link to="/contact"
+            className="text-gray-700 font-medium text-sm">
+            Contact
           </Link>
+          <a href="tel:+919538213100"
+            className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            📞 Call
+          </a>
         </div>
 
       </div>
