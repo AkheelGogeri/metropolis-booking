@@ -107,6 +107,41 @@ function Booking() {
     }
     try {
       await emailjs.send('service_mnsa4js', 'template_39gwbzh', templateParams, 'K0Ns7b9laDwm90uzk')
+
+      // Save booking to localStorage
+      const newBooking = {
+        id: Date.now(),
+        firstName: form.bookingPersonName?.split(' ')[0] || 'Guest',
+        lastName: form.bookingPersonName?.split(' ')[1] || '',
+        phone: form.phone,
+        email: form.email,
+        eventCategory: form.eventCategory,
+        companyName: form.companyName,
+        gstNumber: form.gstNumber,
+        projector: form.projector,
+        bookingType: form.bookingType,
+        eventType: form.eventCategory,
+        venue: form.venue,
+        date: form.date,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        guests: form.guests,
+        foodPreference: form.foodPreference,
+        biryaniChoice: form.biryaniChoice,
+        plates: form.plates,
+        teaCoffee: form.teaCoffee,
+        decoration: form.decoration,
+        setupStyle: form.setupStyle,
+        message: form.message,
+        status: 'Pending',
+        paymentStatus: 'Unpaid',
+        totalAmount: pricing ? pricing.total : 0,
+        createdAt: new Date().toISOString().split('T')[0]
+      }
+      const existingBookings = JSON.parse(localStorage.getItem('metropolis_bookings') || '[]')
+      existingBookings.push(newBooking)
+      localStorage.setItem('metropolis_bookings', JSON.stringify(existingBookings))
+
       navigate('/confirmation', {
         state: { name: form.bookingPersonName, venue: form.venue, date: form.date, pricing }
       })
@@ -132,7 +167,7 @@ function Booking() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
           {/* Left Panel */}
-          <div className="md:col-span-1 space-y-6">
+          <div className="md:col-span-1 space-y-6 order-2 md:order-1">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">📍</span>
@@ -211,7 +246,7 @@ function Booking() {
           </div>
 
           {/* Right — Form */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 order-1 md:order-2">
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Event Category */}
