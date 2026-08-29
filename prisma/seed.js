@@ -114,7 +114,7 @@ async function main() {
     },
   })
 
-  const adminEmail = process.env.ADMIN_SEED_EMAIL || 'admin@hotelmetropolishubli.com'
+  const adminEmail = process.env.ADMIN_SEED_EMAIL || 'hublimetropolis@gmail.com'
   const adminPassword = process.env.ADMIN_SEED_PASSWORD || 'admin123'
   const passwordHash = await bcrypt.hash(adminPassword, 10)
 

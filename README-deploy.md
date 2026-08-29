@@ -38,7 +38,7 @@ After the first successful deploy, seed venues/pricing/payment-settings/admin us
 DATABASE_URL="<neon connection string>" npm run seed
 ```
 
-Default seeded admin login: `admin@hotelmetropolishubli.com` / `admin123`, forced to change on first login. Override with `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` env vars before seeding if you want different seed credentials.
+Default seeded admin login: `hublimetropolis@gmail.com` / `admin123`, forced to change on first login. Override with `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` env vars before seeding if you want different seed credentials.
 
 ## Local development
 

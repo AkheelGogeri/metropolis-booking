@@ -43,7 +43,7 @@ function AdminLogin() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input type="email" required value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@hotelmetropolishubli.com"
+              placeholder="hublimetropolis@gmail.com"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500" />
           </div>
           <div>
