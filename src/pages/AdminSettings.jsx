@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { upload } from '@vercel/blob/client'
-import { apiGet, apiPatch, getToken, clearToken } from '../api/client'
+import { apiGet, apiPatch, apiPost, getToken, clearToken } from '../api/client'
 
 const typeLabel = { BanquetHall: 'Banquet Hall', MeetingRoom: 'Meeting Room' }
 
@@ -141,6 +141,13 @@ function AdminSettings() {
   const [paymentError, setPaymentError] = useState('')
   const [loadError, setLoadError] = useState('')
 
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+
   const loadVenues = () => apiGet('/venues').then(setVenues)
 
   useEffect(() => {
@@ -177,6 +184,34 @@ function AdminSettings() {
       setPaymentError(err.message || 'Failed to save payment settings')
     } finally {
       setPaymentSaving(false)
+    }
+  }
+
+  const handlePasswordSave = async (e) => {
+    e.preventDefault()
+    setPasswordError('')
+    setPasswordSaved(false)
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation do not match')
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      await apiPost('/auth/change-password', { currentPassword, newPassword })
+      setPasswordSaved(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to change password')
+    } finally {
+      setPasswordSaving(false)
     }
   }
 
@@ -241,6 +276,39 @@ function AdminSettings() {
             <button type="submit" disabled={paymentSaving}
               className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
               {paymentSaving ? 'Saving...' : 'Save'}
+            </button>
+          </form>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Security</h2>
+          <form onSubmit={handlePasswordSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 max-w-md">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Current Password</label>
+              <input type="password" required value={currentPassword}
+                onChange={(e) => { setCurrentPassword(e.target.value); setPasswordSaved(false) }}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">New Password</label>
+              <input type="password" required value={newPassword}
+                onChange={(e) => { setNewPassword(e.target.value); setPasswordSaved(false) }}
+                placeholder="At least 8 characters"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Confirm New Password</label>
+              <input type="password" required value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); setPasswordSaved(false) }}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+
+            {passwordError && <p className="text-red-500 text-xs">{passwordError}</p>}
+            {passwordSaved && !passwordError && <p className="text-green-600 text-xs">Password changed</p>}
+
+            <button type="submit" disabled={passwordSaving}
+              className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+              {passwordSaving ? 'Saving...' : 'Change Password'}
             </button>
           </form>
         </div>
