@@ -1,15 +1,31 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import venues from '../data/venues'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { apiGet } from '../api/client'
 
 function Venues() {
-  const banquetHalls = venues.filter(v => v.type === "Banquet Hall")
-  const meetingRooms = venues.filter(v => v.type === "Meeting Room")
+  const [venues, setVenues] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiGet('/venues')
+      .then(setVenues)
+      .catch(() => setVenues([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const banquetHalls = venues.filter(v => v.type === "BanquetHall")
+  const meetingRooms = venues.filter(v => v.type === "MeetingRoom")
+  const typeLabel = { BanquetHall: 'Banquet Hall', MeetingRoom: 'Meeting Room' }
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+
+      {loading && (
+        <p className="text-center text-gray-400 py-8">Loading venues...</p>
+      )}
 
       {/* Page Header */}
       <div className="bg-gray-900 text-white py-16 text-center">
@@ -42,7 +58,7 @@ function Venues() {
               </div>
               <div className="md:w-1/2 p-8 flex flex-col justify-center">
                 <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full w-fit mb-4">
-                  {venue.type}
+                  {typeLabel[venue.type] || venue.type}
                 </span>
                 <h3 className="text-2xl font-bold text-gray-800 mb-3">{venue.name}</h3>
                 <p className="text-gray-500 mb-6">{venue.description}</p>
@@ -81,7 +97,7 @@ function Venues() {
                   </div>
                 </div>
 
-                <Link to={`/booking?venue=${venue.name}`}
+                <Link to={`/booking?venue=${venue.id}`}
                   className="bg-amber-600 hover:bg-amber-700 text-white text-center py-3 rounded-lg font-semibold transition">
                   Book {venue.name}
                 </Link>
@@ -111,7 +127,7 @@ function Venues() {
                 </div>
                 <div className="p-6">
                   <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {venue.type}
+                    {typeLabel[venue.type] || venue.type}
                   </span>
                   <h3 className="text-xl font-bold text-gray-800 mt-3 mb-2">{venue.name}</h3>
                   <p className="text-gray-500 text-sm mb-4">{venue.description}</p>
@@ -135,7 +151,7 @@ function Venues() {
                     ))}
                   </div>
 
-                  <Link to={`/booking?venue=${venue.name}`}
+                  <Link to={`/booking?venue=${venue.id}`}
                     className="block text-center border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white py-2 rounded-lg font-semibold transition">
                     Book {venue.name}
                   </Link>

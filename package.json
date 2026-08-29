@@ -6,15 +6,27 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "vercel-build": "prisma generate && prisma migrate deploy && vite build",
+    "postinstall": "prisma generate",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api:dev": "node server/dev.js",
+    "migrate:dev": "prisma migrate dev",
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@fullcalendar/daygrid": "^6.1.21",
     "@fullcalendar/interaction": "^6.1.21",
     "@fullcalendar/react": "^6.1.21",
+    "@prisma/client": "^6.16.3",
+    "@vercel/blob": "^2.8.0",
     "autoprefixer": "^10.5.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "postcss": "^8.5.15",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -26,6 +38,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "oxlint": "^1.69.0",
+    "prisma": "^6.16.3",
     "vite": "^8.1.0"
   }
 }

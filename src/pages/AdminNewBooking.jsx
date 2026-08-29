@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import venues from '../data/venues'
+import { apiGet, apiPost } from '../api/client'
 
 function AdminNewBooking() {
   const navigate = useNavigate()
+  const [venues, setVenues] = useState([])
+  const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     eventCategory: '',
     companyName: '',
@@ -34,6 +36,12 @@ function AdminNewBooking() {
     if (!isLoggedIn) navigate('/admin/login')
   }, [navigate])
 
+  useEffect(() => {
+    apiGet('/venues')
+      .then(setVenues)
+      .catch(() => setVenues([]))
+  }, [])
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -49,7 +57,7 @@ function AdminNewBooking() {
   }
 
   const calculatePricing = () => {
-    const selectedVenue = venues.find(v => v.name === form.venue)
+    const selectedVenue = venues.find(v => String(v.id) === String(form.venue))
     const hallPrice = selectedVenue?.price || 0
     if (form.bookingType === 'Hall Only') {
       const hallGST = hallPrice * 0.18
@@ -76,44 +84,45 @@ function AdminNewBooking() {
   const pricing = calculatePricing()
   const hours = calculateHours()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const newBooking = {
-      id: Date.now(),
-      firstName: form.bookingPersonName?.split(' ')[0] || 'Guest',
-      lastName: form.bookingPersonName?.split(' ')[1] || '',
-      phone: form.phone,
-      email: form.email,
-      eventCategory: form.eventCategory,
-      eventType: form.eventCategory,
-      companyName: form.companyName,
-      designation: form.designation,
-      gstNumber: form.gstNumber,
-      projector: form.projector,
-      bookingType: form.bookingType,
-      venue: form.venue,
-      date: form.date,
-      startTime: form.startTime,
-      endTime: form.endTime,
-      guests: form.guests,
-      foodPreference: form.foodPreference,
-      biryaniChoice: form.biryaniChoice,
-      plates: form.plates,
-      teaCoffee: form.teaCoffee,
-      decoration: form.decoration,
-      setupStyle: form.setupStyle,
-      message: form.message,
-      status: 'Confirmed',
-      paymentStatus: form.paymentStatus,
-      totalAmount: pricing ? pricing.total : 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      manualEntry: true
+    setSubmitting(true)
+    try {
+      await apiPost('/bookings', {
+        firstName: form.bookingPersonName?.split(' ')[0] || 'Guest',
+        lastName: form.bookingPersonName?.split(' ').slice(1).join(' '),
+        phone: form.phone,
+        email: form.email,
+        eventCategory: form.eventCategory,
+        companyName: form.companyName,
+        designation: form.designation,
+        gstNumber: form.gstNumber,
+        projector: form.projector,
+        bookingType: form.bookingType,
+        venueId: Number(form.venue),
+        date: form.date,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        guests: form.guests,
+        foodPreference: form.foodPreference,
+        biryaniChoice: form.biryaniChoice,
+        plates: form.plates,
+        teaCoffee: form.teaCoffee,
+        decoration: form.decoration,
+        setupStyle: form.setupStyle,
+        message: form.message,
+        status: 'Confirmed',
+        paymentStatus: form.paymentStatus,
+        totalAmount: pricing ? Math.round(pricing.total) : 0,
+        manualEntry: true,
+      })
+      alert('Booking added successfully!')
+      navigate('/admin/dashboard')
+    } catch (err) {
+      alert(err.message || 'Failed to add booking')
+    } finally {
+      setSubmitting(false)
     }
-    const existing = JSON.parse(localStorage.getItem('metropolis_bookings') || '[]')
-    existing.push(newBooking)
-    localStorage.setItem('metropolis_bookings', JSON.stringify(existing))
-    alert('Booking added successfully!')
-    navigate('/admin/dashboard')
   }
 
   return (
@@ -152,11 +161,11 @@ function AdminNewBooking() {
                     <>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Hall Charge</span>
-                        <span>₹{(venues.find(v => v.name === form.venue)?.price || 0).toLocaleString('en-IN')}</span>
+                        <span>₹{(venues.find(v => String(v.id) === String(form.venue))?.price || 0).toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">GST (18%)</span>
-                        <span>₹{((venues.find(v => v.name === form.venue)?.price || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span>₹{((venues.find(v => String(v.id) === String(form.venue))?.price || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   )}
@@ -270,13 +279,13 @@ function AdminNewBooking() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
                   <option value="">-- Select Venue --</option>
                   <optgroup label="Banquet Halls">
-                    {venues.filter(v => v.type === "Banquet Hall").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} guests</option>
+                    {venues.filter(v => v.type === "BanquetHall").map(v => (
+                      <option key={v.id} value={v.id}>{v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} guests</option>
                     ))}
                   </optgroup>
                   <optgroup label="Meeting Rooms">
-                    {venues.filter(v => v.type === "Meeting Room").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — AC — up to {v.capacity} people</option>
+                    {venues.filter(v => v.type === "MeetingRoom").map(v => (
+                      <option key={v.id} value={v.id}>{v.name} — AC — up to {v.capacity} people</option>
                     ))}
                   </optgroup>
                 </select>
@@ -413,9 +422,9 @@ function AdminNewBooking() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status *</label>
                 <select name="paymentStatus" required value={form.paymentStatus} onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                  <option>Unpaid</option>
-                  <option>Advance Paid</option>
-                  <option>Paid</option>
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="AdvancePaid">Advance Paid</option>
+                  <option value="Paid">Paid</option>
                 </select>
               </div>
 
@@ -427,9 +436,9 @@ function AdminNewBooking() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none" />
               </div>
 
-              <button type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-semibold transition">
-                Add Booking
+              <button type="submit" disabled={submitting}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white py-3 rounded-lg font-semibold transition">
+                {submitting ? 'Adding...' : 'Add Booking'}
               </button>
             </form>
           </div>

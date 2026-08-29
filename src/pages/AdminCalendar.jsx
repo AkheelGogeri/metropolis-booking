@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import bookingsData from '../data/bookings'
+import { apiGet, apiPatch, clearToken } from '../api/client'
 
 function AdminCalendar() {
   const navigate = useNavigate()
@@ -16,21 +16,32 @@ function AdminCalendar() {
       navigate('/admin/login')
       return
     }
-    const realBookings = JSON.parse(localStorage.getItem('metropolis_bookings') || '[]')
-    setBookings([...bookingsData, ...realBookings])
+    apiGet('/bookings')
+      .then(setBookings)
+      .catch((err) => {
+        if (err.message?.includes('Invalid or expired token') || err.message?.includes('Missing or invalid')) {
+          handleLogout()
+        }
+      })
   }, [navigate])
 
   const handleLogout = () => {
     localStorage.removeItem('isAdminLoggedIn')
+    clearToken()
     navigate('/admin/login')
   }
 
-  const updateBooking = (id, field, value) => {
-    const updated = bookings.map(b => b.id === id ? { ...b, [field]: value } : b)
-    setBookings(updated)
+  const updateBooking = async (id, field, value) => {
+    const previous = bookings
+    setBookings(bookings.map(b => b.id === id ? { ...b, [field]: value } : b))
     setSelectedBooking(prev => prev?.id === id ? { ...prev, [field]: value } : prev)
-    const realBookings = updated.filter(b => !bookingsData.find(m => m.id === b.id))
-    localStorage.setItem('metropolis_bookings', JSON.stringify(realBookings))
+    try {
+      await apiPatch(`/bookings/${id}`, { [field]: value })
+    } catch (err) {
+      setBookings(previous)
+      setSelectedBooking(prev => prev?.id === id ? previous.find(b => b.id === id) : prev)
+      alert(err.message || 'Failed to update booking')
+    }
   }
 
   const statusColors = {
@@ -41,7 +52,7 @@ function AdminCalendar() {
 
   const events = bookings.map(b => ({
     id: String(b.id),
-    title: `${b.venue} — ${b.firstName} ${b.lastName}`,
+    title: `${b.venue?.name} — ${b.firstName} ${b.lastName}`,
     date: b.date,
     backgroundColor: statusColors[b.status],
     borderColor: statusColors[b.status],
@@ -55,9 +66,16 @@ function AdminCalendar() {
 
   const paymentColor = {
     Unpaid: 'bg-gray-100 text-gray-600',
-    'Advance Paid': 'bg-blue-100 text-blue-700',
+    AdvancePaid: 'bg-blue-100 text-blue-700',
     Paid: 'bg-green-100 text-green-700',
     Refunded: 'bg-purple-100 text-purple-700',
+  }
+
+  const paymentStatusLabel = {
+    Unpaid: 'Unpaid',
+    AdvancePaid: 'Advance Paid',
+    Paid: 'Paid',
+    Refunded: 'Refunded',
   }
 
   return (
@@ -74,6 +92,10 @@ function AdminCalendar() {
           <Link to="/admin/dashboard"
             className="text-gray-600 hover:text-amber-600 font-medium text-sm">
             📋 Table View
+          </Link>
+          <Link to="/admin/settings"
+            className="text-gray-600 hover:text-amber-600 font-medium text-sm">
+            ⚙️ Settings
           </Link>
           <Link to="/admin/new-booking"
             className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -154,11 +176,11 @@ function AdminCalendar() {
                   </div>
                   <div>
                     <p className="text-gray-400">Event Type</p>
-                    <p className="font-medium text-gray-800">{selectedBooking.eventType || selectedBooking.eventCategory}</p>
+                    <p className="font-medium text-gray-800">{selectedBooking.eventCategory}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Venue</p>
-                    <p className="font-medium text-gray-800">{selectedBooking.venue}</p>
+                    <p className="font-medium text-gray-800">{selectedBooking.venue?.name}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Date</p>
@@ -214,7 +236,7 @@ function AdminCalendar() {
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Payment Status</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {['Unpaid', 'Advance Paid', 'Paid', 'Refunded'].map(p => (
+                      {['Unpaid', 'AdvancePaid', 'Paid', 'Refunded'].map(p => (
                         <button key={p}
                           onClick={() => updateBooking(selectedBooking.id, 'paymentStatus', p)}
                           className={`py-1.5 px-2 rounded-lg text-xs font-medium border-2 transition ${
@@ -222,7 +244,7 @@ function AdminCalendar() {
                               ? 'border-amber-500 bg-amber-50 text-amber-700'
                               : 'border-gray-200 text-gray-500'
                           }`}>
-                          {p}
+                          {paymentStatusLabel[p]}
                         </button>
                       ))}
                     </div>

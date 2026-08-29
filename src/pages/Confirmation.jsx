@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { apiGet } from '../api/client'
 
 function Confirmation() {
   const { state } = useLocation()
@@ -8,11 +10,21 @@ function Confirmation() {
   const venue = state?.venue || 'your selected venue'
   const date = state?.date || ''
 
-  // Replace with the hotel's actual UPI ID later
-  const upiId = "hotelmetropolishubli@upi"
-  const advanceAmount = 5000
+  const [payment, setPayment] = useState({
+    upiId: 'hotelmetropolishubli@upi',
+    payeeName: 'Hotel Metropolis Hubli',
+    advanceAmount: 5000,
+  })
 
-  const upiLink = `upi://pay?pa=${upiId}&pn=Hotel Metropolis Hubli&am=${advanceAmount}&cu=INR`
+  useEffect(() => {
+    apiGet('/settings/payment')
+      .then(setPayment)
+      .catch(() => {}) // keep the fallback defaults above if the API is unreachable
+  }, [])
+
+  const { upiId, payeeName, advanceAmount } = payment
+
+  const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${advanceAmount}&cu=INR`
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`
 
   return (

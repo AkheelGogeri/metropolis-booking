@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import emailjs from '@emailjs/browser'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import venues from '../data/venues'
+import { apiGet, apiPost } from '../api/client'
 
 function Booking() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [venues, setVenues] = useState([])
   const [form, setForm] = useState({
     eventCategory: '',
     companyName: '',
@@ -33,13 +34,19 @@ function Booking() {
     email: ''
   })
 
+  useEffect(() => {
+    apiGet('/venues')
+      .then(setVenues)
+      .catch(() => setVenues([]))
+  }, [])
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   const isBusiness = form.eventCategory === 'Business Event'
   const isHallFood = form.bookingType === 'Hall + Food'
-  const selectedVenue = venues.find(v => v.name === form.venue)
+  const selectedVenue = venues.find(v => String(v.id) === String(form.venue))
 
   const calculateHours = () => {
     if (!form.startTime || !form.endTime) return null
@@ -88,7 +95,7 @@ function Booking() {
       gstNumber: form.gstNumber,
       projector: form.projector,
       bookingType: form.bookingType,
-      venue: form.venue,
+      venue: selectedVenue?.name || form.venue,
       date: form.date,
       startTime: form.startTime,
       endTime: form.endTime,
@@ -108,42 +115,40 @@ function Booking() {
     try {
       await emailjs.send('service_mnsa4js', 'template_39gwbzh', templateParams, 'K0Ns7b9laDwm90uzk')
 
-      // Save booking to localStorage
-      const newBooking = {
-        id: Date.now(),
-        firstName: form.bookingPersonName?.split(' ')[0] || 'Guest',
-        lastName: form.bookingPersonName?.split(' ')[1] || '',
-        phone: form.phone,
-        email: form.email,
-        eventCategory: form.eventCategory,
-        companyName: form.companyName,
-        gstNumber: form.gstNumber,
-        projector: form.projector,
-        bookingType: form.bookingType,
-        eventType: form.eventCategory,
-        venue: form.venue,
-        date: form.date,
-        startTime: form.startTime,
-        endTime: form.endTime,
-        guests: form.guests,
-        foodPreference: form.foodPreference,
-        biryaniChoice: form.biryaniChoice,
-        plates: form.plates,
-        teaCoffee: form.teaCoffee,
-        decoration: form.decoration,
-        setupStyle: form.setupStyle,
-        message: form.message,
-        status: 'Pending',
-        paymentStatus: 'Unpaid',
-        totalAmount: pricing ? pricing.total : 0,
-        createdAt: new Date().toISOString().split('T')[0]
+      try {
+        await apiPost('/bookings', {
+          firstName: form.bookingPersonName?.split(' ')[0] || 'Guest',
+          lastName: form.bookingPersonName?.split(' ').slice(1).join(' '),
+          phone: form.phone,
+          email: form.email,
+          eventCategory: form.eventCategory,
+          companyName: form.companyName,
+          designation: form.designation,
+          gstNumber: form.gstNumber,
+          projector: form.projector,
+          bookingType: form.bookingType,
+          venueId: Number(form.venue),
+          date: form.date,
+          startTime: form.startTime,
+          endTime: form.endTime,
+          guests: form.guests,
+          foodPreference: form.foodPreference,
+          biryaniChoice: form.biryaniChoice,
+          plates: form.plates,
+          teaCoffee: form.teaCoffee,
+          decoration: form.decoration,
+          setupStyle: form.setupStyle,
+          message: form.message,
+          totalAmount: pricing ? Math.round(pricing.total) : 0,
+        })
+      } catch (dbError) {
+        // The email notification already went out — don't block the customer
+        // on a database hiccup, just surface it for us to notice in logs.
+        console.error('Booking API error:', dbError)
       }
-      const existingBookings = JSON.parse(localStorage.getItem('metropolis_bookings') || '[]')
-      existingBookings.push(newBooking)
-      localStorage.setItem('metropolis_bookings', JSON.stringify(existingBookings))
 
       navigate('/confirmation', {
-        state: { name: form.bookingPersonName, venue: form.venue, date: form.date, pricing }
+        state: { name: form.bookingPersonName, venue: selectedVenue?.name || form.venue, date: form.date, pricing }
       })
     } catch (error) {
       console.error('Email error:', error)
@@ -335,13 +340,13 @@ function Booking() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
                   <option value="">-- Select a Venue --</option>
                   <optgroup label="Banquet Halls">
-                    {venues.filter(v => v.type === "Banquet Hall").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} guests</option>
+                    {venues.filter(v => v.type === "BanquetHall").map(v => (
+                      <option key={v.id} value={v.id}>{v.name} — {v.ac ? 'AC' : 'Non-AC'} — up to {v.capacity} guests</option>
                     ))}
                   </optgroup>
                   <optgroup label="Meeting Rooms">
-                    {venues.filter(v => v.type === "Meeting Room").map(v => (
-                      <option key={v.id} value={v.name}>{v.name} — AC — up to {v.capacity} people</option>
+                    {venues.filter(v => v.type === "MeetingRoom").map(v => (
+                      <option key={v.id} value={v.id}>{v.name} — AC — up to {v.capacity} people</option>
                     ))}
                   </optgroup>
                 </select>

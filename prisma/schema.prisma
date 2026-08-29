@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VenueType {
+  MeetingRoom
+  BanquetHall
+}
+
+enum BookingStatus {
+  Pending
+  Confirmed
+  Cancelled
+}
+
+enum PaymentStatus {
+  Unpaid
+  AdvancePaid
+  Paid
+  Refunded
+}
+
+enum DiscountType {
+  Percent
+  Flat
+}
+
+model Venue {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  type        VenueType
+  capacity    Int
+  ac          Boolean  @default(false)
+  price       Int
+  image       String?  @db.Text
+  description String   @db.Text
+  timings     String
+  facilities  Json
+  setupStyles Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id               Int           @id @default(autoincrement())
+
+  firstName        String
+  lastName         String
+  phone            String
+  email            String?
+
+  eventCategory    String?
+  companyName      String?
+  designation      String?
+  gstNumber        String?
+  projector        String?
+
+  bookingType      String?
+  venue            Venue         @relation(fields: [venueId], references: [id])
+  venueId          Int
+
+  date             DateTime
+  startTime        String?
+  endTime          String?
+  guests           Int
+
+  foodPreference   String?
+  biryaniChoice    String?
+  plates           Int?
+  teaCoffee        String?
+  decoration       String?
+  setupStyle       String?
+
+  message          String?       @db.Text
+
+  status           BookingStatus @default(Pending)
+  paymentStatus    PaymentStatus @default(Unpaid)
+  totalAmount      Int           @default(0)
+  manualEntry      Boolean       @default(false)
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([venueId])
+  @@index([date])
+  @@index([status])
+}
+
+// Singleton row (id always 1) holding the per-plate menu pricing and GST rates.
+model Pricing {
+  id                 Int      @id @default(1)
+  vegPrice           Int
+  nonVegChickenPrice Int
+  nonVegMuttonPrice  Int
+  mixChickenPrice    Int
+  mixMuttonPrice     Int
+  hallGstPercent     Int
+  foodGstPercent     Int
+  updatedAt          DateTime @updatedAt
+}
+
+model Offer {
+  id           Int          @id @default(autoincrement())
+  title        String
+  description  String       @db.Text
+  discountType DiscountType
+  value        Int
+  validFrom    DateTime
+  validTo      DateTime
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+// Singleton row (id always 1) holding the UPI payment details shown on the confirmation page.
+model PaymentSettings {
+  id            Int      @id @default(1)
+  upiId         String
+  payeeName     String
+  advanceAmount Int
+  updatedAt     DateTime @updatedAt
+}
+
+model AdminUser {
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  passwordHash      String
+  mustChangePassword Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

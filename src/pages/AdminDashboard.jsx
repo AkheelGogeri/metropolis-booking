@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import bookingsData from '../data/bookings'
+import { apiGet, apiPatch, clearToken } from '../api/client'
 
 function AdminDashboard() {
   const navigate = useNavigate()
   const [bookings, setBookings] = useState([])
   const [filterStatus, setFilterStatus] = useState('All')
   const [filterVenue, setFilterVenue] = useState('All')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('isAdminLoggedIn')
@@ -14,27 +15,36 @@ function AdminDashboard() {
       navigate('/admin/login')
       return
     }
-    // Load mock data + real bookings from localStorage
-    const realBookings = JSON.parse(localStorage.getItem('metropolis_bookings') || '[]')
-    setBookings([...bookingsData, ...realBookings])
+    apiGet('/bookings')
+      .then(setBookings)
+      .catch((err) => {
+        setError(err.message || 'Failed to load bookings')
+        if (err.message?.includes('Invalid or expired token') || err.message?.includes('Missing or invalid')) {
+          handleLogout()
+        }
+      })
   }, [navigate])
 
   const handleLogout = () => {
     localStorage.removeItem('isAdminLoggedIn')
+    clearToken()
     navigate('/admin/login')
   }
 
-  const updateBooking = (id, field, value) => {
-    const updated = bookings.map(b => b.id === id ? { ...b, [field]: value } : b)
-    setBookings(updated)
-    // Save real bookings back to localStorage
-    const realBookings = updated.filter(b => !bookingsData.find(m => m.id === b.id))
-    localStorage.setItem('metropolis_bookings', JSON.stringify(realBookings))
+  const updateBooking = async (id, field, value) => {
+    const previous = bookings
+    setBookings(bookings.map(b => b.id === id ? { ...b, [field]: value } : b))
+    try {
+      await apiPatch(`/bookings/${id}`, { [field]: value })
+    } catch (err) {
+      setBookings(previous)
+      alert(err.message || 'Failed to update booking')
+    }
   }
 
   const filteredBookings = bookings.filter(b => {
     const statusMatch = filterStatus === 'All' || b.status === filterStatus
-    const venueMatch = filterVenue === 'All' || b.venue === filterVenue
+    const venueMatch = filterVenue === 'All' || b.venue?.name === filterVenue
     return statusMatch && venueMatch
   })
 
@@ -53,7 +63,7 @@ function AdminDashboard() {
 
   const paymentColor = {
     Unpaid: 'bg-gray-100 text-gray-600',
-    'Advance Paid': 'bg-blue-100 text-blue-700',
+    AdvancePaid: 'bg-blue-100 text-blue-700',
     Paid: 'bg-green-100 text-green-700',
     Refunded: 'bg-purple-100 text-purple-700',
   }
@@ -73,6 +83,10 @@ function AdminDashboard() {
             className="text-gray-600 hover:text-amber-600 font-medium text-sm">
             📅 Calendar View
           </Link>
+          <Link to="/admin/settings"
+            className="text-gray-600 hover:text-amber-600 font-medium text-sm">
+            ⚙️ Settings
+          </Link>
           <Link to="/admin/new-booking"
             className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
             + Add Manual Booking
@@ -85,6 +99,12 @@ function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-6">
+            {error}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -152,10 +172,10 @@ function AdminDashboard() {
                       {b.companyName && <p className="text-blue-500 text-xs">{b.companyName}</p>}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      <p>{b.eventType || b.eventCategory}</p>
+                      <p>{b.eventCategory}</p>
                       {b.bookingType && <p className="text-xs text-gray-400">{b.bookingType}</p>}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{b.venue}</td>
+                    <td className="px-4 py-3 text-gray-600">{b.venue?.name}</td>
                     <td className="px-4 py-3 text-gray-600">
                       <p>{new Date(b.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                       {b.startTime && <p className="text-xs text-gray-400">{b.startTime} - {b.endTime}</p>}
@@ -169,10 +189,10 @@ function AdminDashboard() {
                         value={b.paymentStatus}
                         onChange={(e) => updateBooking(b.id, 'paymentStatus', e.target.value)}
                         className={`text-xs px-2 py-1 rounded-full border-0 font-medium cursor-pointer ${paymentColor[b.paymentStatus]}`}>
-                        <option>Unpaid</option>
-                        <option>Advance Paid</option>
-                        <option>Paid</option>
-                        <option>Refunded</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="AdvancePaid">Advance Paid</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Refunded">Refunded</option>
                       </select>
                     </td>
                     <td className="px-4 py-3">

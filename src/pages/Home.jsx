@@ -1,11 +1,21 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import venues from '../data/venues'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { apiGet } from '../api/client'
 
 function Home() {
-  const banquetHalls = venues.filter(v => v.type === "Banquet Hall")
-  const meetingRooms = venues.filter(v => v.type === "Meeting Room")
+  const [venues, setVenues] = useState([])
+
+  useEffect(() => {
+    apiGet('/venues')
+      .then(setVenues)
+      .catch(() => setVenues([]))
+  }, [])
+
+  const banquetHalls = venues.filter(v => v.type === "BanquetHall")
+  const meetingRooms = venues.filter(v => v.type === "MeetingRoom")
+  const typeLabel = { BanquetHall: 'Banquet Hall', MeetingRoom: 'Meeting Room' }
 
   return (
     <div className="min-h-screen bg-white">
@@ -84,7 +94,7 @@ function Home() {
                   className="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
                 <span className="absolute top-3 left-3 bg-amber-600 text-white text-xs px-3 py-1 rounded-full">
-                  {venue.type}
+                  {typeLabel[venue.type] || venue.type}
                 </span>
               </div>
               <div className="p-5">
@@ -100,7 +110,7 @@ function Home() {
                     <p className="font-semibold text-amber-600">₹{venue.price.toLocaleString()}</p>
                   </div>
                 </div>
-                <Link to={`/booking?venue=${venue.name}`}
+                <Link to={`/booking?venue=${venue.id}`}
                   className="block text-center mt-5 bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-medium transition">
                   Check Availability
                 </Link>
@@ -131,7 +141,7 @@ function Home() {
                     className="w-full h-full object-cover hover:scale-105 transition duration-300"
                   />
                   <span className="absolute top-3 left-3 bg-gray-800 text-white text-xs px-3 py-1 rounded-full">
-                    {venue.type}
+                    {typeLabel[venue.type] || venue.type}
                   </span>
                 </div>
                 <div className="p-5">
@@ -147,7 +157,7 @@ function Home() {
                       <p className="font-semibold text-amber-600">₹{venue.price.toLocaleString()}</p>
                     </div>
                   </div>
-                  <Link to={`/booking?venue=${venue.name}`}
+                  <Link to={`/booking?venue=${venue.id}`}
                     className="block text-center mt-5 border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white py-2 rounded-lg font-medium transition">
                     Check Availability
                   </Link>

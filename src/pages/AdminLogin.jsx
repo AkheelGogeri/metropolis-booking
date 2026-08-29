@@ -1,20 +1,27 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiPost, setToken } from '../api/client'
 
 function AdminLogin() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    // Demo login — replace with real auth later
-    if (email === 'admin@hotelmetropolishubli.com' && password === 'admin123') {
+    setError('')
+    setLoading(true)
+    try {
+      const { token, mustChangePassword } = await apiPost('/auth/login', { email, password })
+      setToken(token)
       localStorage.setItem('isAdminLoggedIn', 'true')
-      navigate('/admin/dashboard')
-    } else {
-      setError('Invalid email or password')
+      navigate(mustChangePassword ? '/admin/change-password' : '/admin/dashboard')
+    } catch (err) {
+      setError(err.message || 'Invalid email or password')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -51,15 +58,11 @@ function AdminLogin() {
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
 
-          <button type="submit"
-            className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-semibold transition">
-            Login
+          <button type="submit" disabled={loading}
+            className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white py-3 rounded-lg font-semibold transition">
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
-        <p className="text-center text-gray-400 text-xs mt-6">
-          Demo credentials: admin@hotelmetropolishubli.com / admin123
-        </p>
       </div>
     </div>
   )
