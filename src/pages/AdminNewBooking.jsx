@@ -127,18 +127,18 @@ function AdminNewBooking() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <img src="https://hotelmetropolishubli.in/wp-content/uploads/2022/03/metropolis-hotel-logo-1-Phone-Custom-Custom-1.png"
-            alt="Logo" className="h-10 object-contain" />
-          <h1 className="text-lg font-bold text-gray-800">Add Manual Booking</h1>
+            alt="Logo" className="h-9 sm:h-10 object-contain shrink-0" />
+          <h1 className="text-base sm:text-lg font-bold text-gray-800">Add Manual Booking</h1>
         </div>
         <Link to="/admin/dashboard" className="text-gray-500 hover:text-amber-600 text-sm font-medium">
           ← Back to Dashboard
         </Link>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
           <p className="text-sm text-amber-700">📞 Use this form to add bookings received over phone calls or walk-ins</p>
         </div>

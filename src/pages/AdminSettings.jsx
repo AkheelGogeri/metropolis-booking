@@ -217,19 +217,19 @@ function AdminSettings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
             src="https://hotelmetropolishubli.in/wp-content/uploads/2022/03/metropolis-hotel-logo-1-Phone-Custom-Custom-1.png"
-            alt="Logo" className="h-10 object-contain" />
-          <h1 className="text-lg font-bold text-gray-800">Settings</h1>
+            alt="Logo" className="h-9 sm:h-10 object-contain shrink-0" />
+          <h1 className="text-base sm:text-lg font-bold text-gray-800">Settings</h1>
         </div>
         <Link to="/admin/dashboard" className="text-gray-500 hover:text-amber-600 text-sm font-medium">
           ← Back to Dashboard
         </Link>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-10">
         {loadError && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
             {loadError}

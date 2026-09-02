@@ -81,14 +81,14 @@ function AdminCalendar() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
             src="https://hotelmetropolishubli.in/wp-content/uploads/2022/03/metropolis-hotel-logo-1-Phone-Custom-Custom-1.png"
-            alt="Logo" className="h-10 object-contain" />
-          <h1 className="text-lg font-bold text-gray-800">Booking Calendar</h1>
+            alt="Logo" className="h-9 sm:h-10 object-contain shrink-0" />
+          <h1 className="text-base sm:text-lg font-bold text-gray-800">Booking Calendar</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
           <Link to="/admin/dashboard"
             className="text-gray-600 hover:text-amber-600 font-medium text-sm">
             📋 Table View
@@ -108,10 +108,10 @@ function AdminCalendar() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Legend */}
-        <div className="flex gap-6 mb-6">
+        <div className="flex flex-wrap gap-4 sm:gap-6 mb-6">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
             <span className="text-sm text-gray-600">Pending</span>
