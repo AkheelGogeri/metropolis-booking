@@ -47,19 +47,34 @@ function compressImage(file, { maxDimension = 1920, quality = 0.82 } = {}) {
   })
 }
 
+const MAX_PHOTOS = 6
+
 function VenueCard({ venue, onSaved }) {
   const [price, setPrice] = useState(venue.price)
-  const [file, setFile] = useState(null)
-  const [preview, setPreview] = useState(venue.image)
+  // Each slot is either { type: 'existing', url } or { type: 'pending', file, previewUrl }
+  const [slots, setSlots] = useState(
+    (Array.isArray(venue.images) ? venue.images : []).map((url) => ({ type: 'existing', url }))
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
 
-  const handleFileChange = (e) => {
-    const selected = e.target.files?.[0]
-    if (!selected) return
-    setFile(selected)
-    setPreview(URL.createObjectURL(selected))
+  const handleFilesChange = (e) => {
+    const selected = [...(e.target.files || [])]
+    if (selected.length === 0) return
+    const room = MAX_PHOTOS - slots.length
+    const toAdd = selected.slice(0, room).map((file) => ({
+      type: 'pending',
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
+    setSlots([...slots, ...toAdd])
+    setSaved(false)
+    e.target.value = ''
+  }
+
+  const removeSlot = (index) => {
+    setSlots(slots.filter((_, i) => i !== index))
     setSaved(false)
   }
 
@@ -68,19 +83,23 @@ function VenueCard({ venue, onSaved }) {
     setError('')
     setSaved(false)
     try {
-      let image = venue.image
-      if (file) {
-        const compressed = await compressImage(file)
+      const images = []
+      for (const slot of slots) {
+        if (slot.type === 'existing') {
+          images.push(slot.url)
+          continue
+        }
+        const compressed = await compressImage(slot.file)
         const blob = await upload(`venues/${venue.id}-${compressed.name}`, compressed, {
           access: 'public',
           handleUploadUrl: '/api/venue-image-upload',
           clientPayload: JSON.stringify({ token: getToken() }),
         })
-        image = blob.url
+        images.push(blob.url)
       }
-      await apiPatch(`/venues/${venue.id}`, { price: Number(price), image })
+      await apiPatch(`/venues/${venue.id}`, { price: Number(price), images })
+      setSlots(images.map((url) => ({ type: 'existing', url })))
       setSaved(true)
-      setFile(null)
       onSaved()
     } catch (err) {
       setError(err.message || 'Failed to save venue')
@@ -91,18 +110,35 @@ function VenueCard({ venue, onSaved }) {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row gap-5">
-      <div className="sm:w-48 shrink-0">
-        <div className="h-32 w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-          {preview ? (
-            <img src={preview} alt={venue.name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-gray-400 text-xs">No photo yet</span>
-          )}
-        </div>
-        <label className="mt-2 block text-xs font-medium text-amber-600 cursor-pointer">
-          Choose photo
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-        </label>
+      <div className="sm:w-56 shrink-0">
+        {slots.length === 0 ? (
+          <div className="h-32 w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+            <span className="text-gray-400 text-xs">No photos yet</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {slots.map((slot, i) => (
+              <div key={i} className="relative h-16 rounded-lg overflow-hidden bg-gray-100 group">
+                <img
+                  src={slot.type === 'existing' ? slot.url : slot.previewUrl}
+                  alt={`${venue.name} ${i + 1}`}
+                  className="w-full h-full object-cover" />
+                <button
+                  onClick={() => removeSlot(i)}
+                  aria-label="Remove photo"
+                  className="absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white w-4 h-4 rounded-full text-xs leading-none flex items-center justify-center">
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {slots.length < MAX_PHOTOS && (
+          <label className="mt-2 block text-xs font-medium text-amber-600 cursor-pointer">
+            + Add photo{slots.length > 0 ? 's' : ''}
+            <input type="file" accept="image/*" multiple onChange={handleFilesChange} className="hidden" />
+          </label>
+        )}
       </div>
 
       <div className="flex-1">

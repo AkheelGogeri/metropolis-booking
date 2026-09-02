@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import emailjs from '@emailjs/browser'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import VenueGallery from '../components/VenueGallery'
 import { apiGet, apiPost } from '../api/client'
 
 function Booking() {
@@ -198,10 +199,15 @@ function Booking() {
             </div>
 
             {selectedVenue && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                <p className="text-xs text-amber-600 font-semibold uppercase mb-2">Selected Venue</p>
-                <h3 className="font-bold text-gray-800">{selectedVenue.name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{selectedVenue.ac ? '❄️ AC' : '🌀 Non-AC'} · Up to {selectedVenue.capacity} guests</p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+                <div className="h-40">
+                  <VenueGallery images={selectedVenue.images} alt={selectedVenue.name} />
+                </div>
+                <div className="p-5">
+                  <p className="text-xs text-amber-600 font-semibold uppercase mb-2">Selected Venue</p>
+                  <h3 className="font-bold text-gray-800">{selectedVenue.name}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{selectedVenue.ac ? '❄️ AC' : '🌀 Non-AC'} · Up to {selectedVenue.capacity} guests</p>
+                </div>
               </div>
             )}
 

@@ -5,7 +5,7 @@ import requireAdmin from '../middleware/requireAdmin.js'
 const router = express.Router()
 
 const PATCHABLE_FIELDS = [
-  'name', 'type', 'capacity', 'ac', 'price', 'image',
+  'name', 'type', 'capacity', 'ac', 'price', 'images',
   'description', 'timings', 'facilities', 'setupStyles',
 ]
 

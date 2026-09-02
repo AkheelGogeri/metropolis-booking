@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import VenueGallery from '../components/VenueGallery'
 import { apiGet } from '../api/client'
 
 function Venues() {
@@ -50,11 +51,7 @@ function Venues() {
             <div key={venue.id}
               className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 bg-gray-50 rounded-2xl overflow-hidden shadow-md`}>
               <div className="md:w-1/2 h-72 md:h-auto overflow-hidden">
-                <img
-                  src={venue.image}
-                  alt={venue.name}
-                  className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                />
+                <VenueGallery images={venue.images} alt={venue.name} />
               </div>
               <div className="md:w-1/2 p-8 flex flex-col justify-center">
                 <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full w-fit mb-4">
@@ -119,11 +116,7 @@ function Venues() {
             {meetingRooms.map(venue => (
               <div key={venue.id} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition">
                 <div className="h-52 overflow-hidden">
-                  <img
-                    src={venue.image}
-                    alt={venue.name}
-                    className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                  />
+                  <VenueGallery images={venue.images} alt={venue.name} />
                 </div>
                 <div className="p-6">
                   <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full">

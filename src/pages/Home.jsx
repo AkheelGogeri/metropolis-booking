@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import VenueGallery from '../components/VenueGallery'
 import { apiGet } from '../api/client'
 
 function Home() {
@@ -88,12 +89,8 @@ function Home() {
           {banquetHalls.map(venue => (
             <div key={venue.id} className="rounded-xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition">
               <div className="relative h-52 overflow-hidden">
-                <img
-                  src={venue.image}
-                  alt={venue.name}
-                  className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                />
-                <span className="absolute top-3 left-3 bg-amber-600 text-white text-xs px-3 py-1 rounded-full">
+                <VenueGallery images={venue.images} alt={venue.name} />
+                <span className="absolute top-3 left-3 bg-amber-600 text-white text-xs px-3 py-1 rounded-full pointer-events-none">
                   {typeLabel[venue.type] || venue.type}
                 </span>
               </div>
@@ -135,12 +132,8 @@ function Home() {
             {meetingRooms.map(venue => (
               <div key={venue.id} className="rounded-xl overflow-hidden shadow-lg bg-white border border-gray-100 hover:shadow-xl transition">
                 <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={venue.image}
-                    alt={venue.name}
-                    className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                  />
-                  <span className="absolute top-3 left-3 bg-gray-800 text-white text-xs px-3 py-1 rounded-full">
+                  <VenueGallery images={venue.images} alt={venue.name} />
+                  <span className="absolute top-3 left-3 bg-gray-800 text-white text-xs px-3 py-1 rounded-full pointer-events-none">
                     {typeLabel[venue.type] || venue.type}
                   </span>
                 </div>

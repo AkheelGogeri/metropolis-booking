@@ -37,7 +37,7 @@ model Venue {
   capacity    Int
   ac          Boolean  @default(false)
   price       Int
-  image       String?  @db.Text
+  images      Json?
   description String   @db.Text
   timings     String
   facilities  Json
