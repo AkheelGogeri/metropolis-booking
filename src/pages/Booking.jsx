@@ -87,10 +87,15 @@ function Booking() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    const [firstName, ...restName] = (form.bookingPersonName || '').trim().split(/\s+/)
+
     const templateParams = {
       eventCategory: form.eventCategory,
+      eventType: form.eventCategory,
       companyName: form.companyName,
       bookingPersonName: form.bookingPersonName,
+      firstName: firstName || 'Guest',
+      lastName: restName.join(' '),
       designation: form.designation,
       gstNumber: form.gstNumber,
       projector: form.projector,
@@ -109,6 +114,7 @@ function Booking() {
       setupStyle: form.setupStyle,
       message: form.message,
       phone: form.phone,
+      email: form.email,
       to_email: form.email,
       totalAmount: pricing ? `₹${pricing.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'TBD',
     }
