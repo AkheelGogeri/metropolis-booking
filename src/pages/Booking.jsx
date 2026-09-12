@@ -11,6 +11,10 @@ function Booking() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [venues, setVenues] = useState([])
+  const [menuPricing, setMenuPricing] = useState({
+    vegPrice: 800, nonVegChickenPrice: 1050, nonVegMuttonPrice: 1250,
+    mixChickenPrice: 1300, mixMuttonPrice: 1500, hallGstPercent: 18, foodGstPercent: 5,
+  })
   const [form, setForm] = useState({
     eventCategory: '',
     companyName: '',
@@ -39,6 +43,9 @@ function Booking() {
     apiGet('/venues')
       .then(setVenues)
       .catch(() => setVenues([]))
+    apiGet('/pricing')
+      .then(setMenuPricing)
+      .catch(() => {}) // keep the fallback defaults above if the API is unreachable
   }, [])
 
   const handleChange = (e) => {
@@ -59,9 +66,9 @@ function Booking() {
   }
 
   const getPlatePrice = () => {
-    if (form.foodPreference === 'Veg') return 750
-    if (form.foodPreference === 'Non Veg') return form.biryaniChoice === 'Mutton Biryani' ? 1100 : 950
-    if (form.foodPreference === 'Mix') return form.biryaniChoice === 'Mutton Biryani' ? 1450 : 1300
+    if (form.foodPreference === 'Veg') return menuPricing.vegPrice
+    if (form.foodPreference === 'Non Veg') return form.biryaniChoice === 'Mutton Biryani' ? menuPricing.nonVegMuttonPrice : menuPricing.nonVegChickenPrice
+    if (form.foodPreference === 'Mix') return form.biryaniChoice === 'Mutton Biryani' ? menuPricing.mixMuttonPrice : menuPricing.mixChickenPrice
     return 0
   }
 
@@ -74,11 +81,14 @@ function Booking() {
     const platePrice = getPlatePrice()
     const hallPrice = selectedVenue?.price || 0
 
+    const hallGstRate = menuPricing.hallGstPercent / 100
+    const foodGstRate = menuPricing.foodGstPercent / 100
+
     const projectorCharge = needsProjectorCharge ? PROJECTOR_PRICE : 0
-    const projectorGST = projectorCharge * 0.18
+    const projectorGST = projectorCharge * hallGstRate
 
     if (form.bookingType === 'Hall Only') {
-      const hallGST = hallPrice * 0.18
+      const hallGST = hallPrice * hallGstRate
       return {
         hallCharge: hallPrice, foodCharge: 0, hallGST, foodGST: 0,
         projectorCharge, projectorGST,
@@ -87,7 +97,7 @@ function Booking() {
     }
     if (form.bookingType === 'Hall + Food') {
       const foodCharge = plates * platePrice
-      const foodGST = foodCharge * 0.05
+      const foodGST = foodCharge * foodGstRate
       return {
         hallCharge: 0, foodCharge, hallGST: 0, foodGST,
         projectorCharge, projectorGST,
@@ -247,7 +257,7 @@ function Booking() {
                         <span className="font-medium">₹{pricing.hallCharge.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (18%)</span>
+                        <span className="text-gray-600">GST ({menuPricing.hallGstPercent}%)</span>
                         <span className="font-medium">₹{pricing.hallGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
@@ -263,7 +273,7 @@ function Booking() {
                         <span className="font-medium">₹{pricing.foodCharge.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (5%)</span>
+                        <span className="text-gray-600">GST ({menuPricing.foodGstPercent}%)</span>
                         <span className="font-medium">₹{pricing.foodGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
@@ -275,7 +285,7 @@ function Booking() {
                         <span className="font-medium">₹{pricing.projectorCharge.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (18%)</span>
+                        <span className="text-gray-600">GST ({menuPricing.hallGstPercent}%)</span>
                         <span className="font-medium">₹{pricing.projectorGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
@@ -427,7 +437,7 @@ function Booking() {
                     </button>
                   ))}
                 </div>
-                {form.bookingType === 'Hall Only' && <p className="text-xs text-gray-500 mt-2">18% GST applicable on hall charges</p>}
+                {form.bookingType === 'Hall Only' && <p className="text-xs text-gray-500 mt-2">{menuPricing.hallGstPercent}% GST applicable on hall charges</p>}
                 {form.bookingType === 'Hall + Food' && <p className="text-xs text-green-600 mt-2">✓ Hall is FREE when you order food</p>}
               </div>
 
@@ -441,9 +451,9 @@ function Booking() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Menu Type *</label>
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { label: '🥦 Veg', value: 'Veg', price: '₹750/plate' },
-                        { label: '🍗 Non Veg', value: 'Non Veg', price: 'from ₹950/plate' },
-                        { label: '🍽️ Mix', value: 'Mix', price: 'from ₹1,300/plate' },
+                        { label: '🥦 Veg', value: 'Veg', price: `₹${menuPricing.vegPrice.toLocaleString('en-IN')}/plate` },
+                        { label: '🍗 Non Veg', value: 'Non Veg', price: `from ₹${menuPricing.nonVegChickenPrice.toLocaleString('en-IN')}/plate` },
+                        { label: '🍽️ Mix', value: 'Mix', price: `from ₹${menuPricing.mixChickenPrice.toLocaleString('en-IN')}/plate` },
                       ].map(opt => (
                         <button type="button" key={opt.value}
                           onClick={() => setForm({ ...form, foodPreference: opt.value, biryaniChoice: '' })}
@@ -458,7 +468,7 @@ function Booking() {
                   {/* Veg Menu */}
                   {form.foodPreference === 'Veg' && (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                      <p className="text-sm font-semibold text-green-700 mb-3">🥦 Veg Menu Includes — ₹750 per plate</p>
+                      <p className="text-sm font-semibold text-green-700 mb-3">🥦 Veg Menu Includes — ₹{menuPricing.vegPrice.toLocaleString('en-IN')} per plate</p>
                       <div className="flex flex-wrap gap-2">
                         {['Welcome Drink', 'Veg Soup', 'Veg Starter', 'Veg Gravy', 'Paneer Gravy', '2 Types of Roti', 'Rice & Daal', 'Veg Biryani', 'Raita & Papad', 'Pickle', 'Ice Cream', 'Water Bottle 500ml'].map(item => (
                           <span key={item} className="bg-white border border-green-300 text-green-800 text-xs px-3 py-1 rounded-full">✓ {item}</span>
@@ -470,7 +480,7 @@ function Booking() {
                   {/* Non Veg Menu */}
                   {form.foodPreference === 'Non Veg' && (
                     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                      <p className="text-sm font-semibold text-orange-700 mb-3">🍗 Non Veg Menu Includes — from ₹950 per plate</p>
+                      <p className="text-sm font-semibold text-orange-700 mb-3">🍗 Non Veg Menu Includes — from ₹{menuPricing.nonVegChickenPrice.toLocaleString('en-IN')} per plate</p>
                       <div className="flex flex-wrap gap-2">
                         {['Welcome Drink', 'Veg Soup', 'Veg Starter', 'Veg Gravy', 'Chicken Gravy', '2 Types of Roti', 'Rice & Daal', 'Chicken Biryani / Mutton Biryani', 'Raita & Papad', 'Pickle', 'Ice Cream', 'Water Bottle 500ml'].map(item => (
                           <span key={item} className="bg-white border border-orange-300 text-orange-800 text-xs px-3 py-1 rounded-full">✓ {item}</span>
@@ -482,7 +492,7 @@ function Booking() {
                   {/* Mix Menu */}
                   {form.foodPreference === 'Mix' && (
                     <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                      <p className="text-sm font-semibold text-purple-700 mb-3">🍽️ Mix Menu Includes — from ₹1,300 per plate</p>
+                      <p className="text-sm font-semibold text-purple-700 mb-3">🍽️ Mix Menu Includes — from ₹{menuPricing.mixChickenPrice.toLocaleString('en-IN')} per plate</p>
                       <div className="flex flex-wrap gap-2">
                         {['Welcome Drink', 'Veg Soup', 'Chicken Soup', 'Veg Starter', 'Chicken Starter', 'Veg Gravy', 'Chicken Gravy', '2 Types of Roti', 'Veg Biryani', 'Chicken Biryani / Mutton Biryani', 'Raita & Papad', 'Pickle', 'Water Bottle 500ml'].map(item => (
                           <span key={item} className="bg-white border border-purple-300 text-purple-800 text-xs px-3 py-1 rounded-full">✓ {item}</span>
@@ -497,8 +507,8 @@ function Booking() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Biryani Choice *</label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: '₹950/plate' },
-                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: '₹1,100/plate' },
+                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: `₹${menuPricing.nonVegChickenPrice.toLocaleString('en-IN')}/plate` },
+                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: `₹${menuPricing.nonVegMuttonPrice.toLocaleString('en-IN')}/plate` },
                         ].map(opt => (
                           <button type="button" key={opt.value}
                             onClick={() => setForm({ ...form, biryaniChoice: opt.value })}
@@ -517,8 +527,8 @@ function Booking() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Biryani Choice *</label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: '₹1,300/plate' },
-                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: '₹1,450/plate' },
+                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: `₹${menuPricing.mixChickenPrice.toLocaleString('en-IN')}/plate` },
+                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: `₹${menuPricing.mixMuttonPrice.toLocaleString('en-IN')}/plate` },
                         ].map(opt => (
                           <button type="button" key={opt.value}
                             onClick={() => setForm({ ...form, biryaniChoice: opt.value })}

@@ -6,6 +6,10 @@ function AdminNewBooking() {
   const navigate = useNavigate()
   const [venues, setVenues] = useState([])
   const [submitting, setSubmitting] = useState(false)
+  const [menuPricing, setMenuPricing] = useState({
+    vegPrice: 800, nonVegChickenPrice: 1050, nonVegMuttonPrice: 1250,
+    mixChickenPrice: 1300, mixMuttonPrice: 1500, hallGstPercent: 18, foodGstPercent: 5,
+  })
   const [form, setForm] = useState({
     eventCategory: '',
     companyName: '',
@@ -40,6 +44,9 @@ function AdminNewBooking() {
     apiGet('/venues')
       .then(setVenues)
       .catch(() => setVenues([]))
+    apiGet('/pricing')
+      .then(setMenuPricing)
+      .catch(() => {})
   }, [])
 
   const handleChange = (e) => {
@@ -54,25 +61,27 @@ function AdminNewBooking() {
   const needsProjectorCharge = isBusiness && form.projector === 'Yes'
 
   const getPlatePrice = () => {
-    if (form.foodPreference === 'Veg') return 750
-    if (form.foodPreference === 'Non Veg') return form.biryaniChoice === 'Mutton Biryani' ? 1100 : 950
-    if (form.foodPreference === 'Mix') return form.biryaniChoice === 'Mutton Biryani' ? 1450 : 1300
+    if (form.foodPreference === 'Veg') return menuPricing.vegPrice
+    if (form.foodPreference === 'Non Veg') return form.biryaniChoice === 'Mutton Biryani' ? menuPricing.nonVegMuttonPrice : menuPricing.nonVegChickenPrice
+    if (form.foodPreference === 'Mix') return form.biryaniChoice === 'Mutton Biryani' ? menuPricing.mixMuttonPrice : menuPricing.mixChickenPrice
     return 0
   }
 
   const calculatePricing = () => {
     const hallPrice = selectedVenue?.price || 0
+    const hallGstRate = menuPricing.hallGstPercent / 100
+    const foodGstRate = menuPricing.foodGstPercent / 100
     const projectorCharge = needsProjectorCharge ? PROJECTOR_PRICE : 0
-    const projectorGST = projectorCharge * 0.18
+    const projectorGST = projectorCharge * hallGstRate
 
     if (form.bookingType === 'Hall Only') {
-      const hallGST = hallPrice * 0.18
+      const hallGST = hallPrice * hallGstRate
       return { total: hallPrice + hallGST + projectorCharge + projectorGST, projectorCharge, projectorGST }
     }
     if (form.bookingType === 'Hall + Food') {
       const plates = parseInt(form.plates) || 0
       const foodCharge = plates * getPlatePrice()
-      const foodGST = foodCharge * 0.05
+      const foodGST = foodCharge * foodGstRate
       return { total: foodCharge + foodGST + projectorCharge + projectorGST, projectorCharge, projectorGST }
     }
     return null
@@ -170,8 +179,8 @@ function AdminNewBooking() {
                         <span>₹{(selectedVenue?.price || 0).toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (18%)</span>
-                        <span>₹{((selectedVenue?.price || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span className="text-gray-600">GST ({menuPricing.hallGstPercent}%)</span>
+                        <span>₹{((selectedVenue?.price || 0) * (menuPricing.hallGstPercent / 100)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   )}
@@ -186,8 +195,8 @@ function AdminNewBooking() {
                         <span>₹{((parseInt(form.plates) || 0) * getPlatePrice()).toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (5%)</span>
-                        <span>₹{(((parseInt(form.plates) || 0) * getPlatePrice()) * 0.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span className="text-gray-600">GST ({menuPricing.foodGstPercent}%)</span>
+                        <span>₹{(((parseInt(form.plates) || 0) * getPlatePrice()) * (menuPricing.foodGstPercent / 100)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   )}
@@ -198,7 +207,7 @@ function AdminNewBooking() {
                         <span>₹{pricing.projectorCharge.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">GST (18%)</span>
+                        <span className="text-gray-600">GST ({menuPricing.hallGstPercent}%)</span>
                         <span>₹{pricing.projectorGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
@@ -352,9 +361,9 @@ function AdminNewBooking() {
                   <p className="text-sm font-semibold text-gray-700">Food Selection</p>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: '🥦 Veg', value: 'Veg', price: '₹750/plate' },
-                      { label: '🍗 Non Veg', value: 'Non Veg', price: 'from ₹950/plate' },
-                      { label: '🍽️ Mix', value: 'Mix', price: 'from ₹1,300/plate' },
+                      { label: '🥦 Veg', value: 'Veg', price: `₹${menuPricing.vegPrice.toLocaleString('en-IN')}/plate` },
+                      { label: '🍗 Non Veg', value: 'Non Veg', price: `from ₹${menuPricing.nonVegChickenPrice.toLocaleString('en-IN')}/plate` },
+                      { label: '🍽️ Mix', value: 'Mix', price: `from ₹${menuPricing.mixChickenPrice.toLocaleString('en-IN')}/plate` },
                     ].map(opt => (
                       <button type="button" key={opt.value}
                         onClick={() => setForm({ ...form, foodPreference: opt.value, biryaniChoice: '' })}
@@ -370,8 +379,8 @@ function AdminNewBooking() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Biryani Choice</label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: form.foodPreference === 'Mix' ? '₹1,300/plate' : '₹950/plate' },
-                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: form.foodPreference === 'Mix' ? '₹1,450/plate' : '₹1,100/plate' },
+                          { label: '🍗 Chicken Biryani', value: 'Chicken Biryani', price: `₹${(form.foodPreference === 'Mix' ? menuPricing.mixChickenPrice : menuPricing.nonVegChickenPrice).toLocaleString('en-IN')}/plate` },
+                          { label: '🐑 Mutton Biryani', value: 'Mutton Biryani', price: `₹${(form.foodPreference === 'Mix' ? menuPricing.mixMuttonPrice : menuPricing.nonVegMuttonPrice).toLocaleString('en-IN')}/plate` },
                         ].map(opt => (
                           <button type="button" key={opt.value}
                             onClick={() => setForm({ ...form, biryaniChoice: opt.value })}

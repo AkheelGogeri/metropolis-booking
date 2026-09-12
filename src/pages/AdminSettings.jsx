@@ -177,6 +177,14 @@ function AdminSettings() {
   const [paymentError, setPaymentError] = useState('')
   const [loadError, setLoadError] = useState('')
 
+  const [menuPricing, setMenuPricing] = useState({
+    vegPrice: '', nonVegChickenPrice: '', nonVegMuttonPrice: '',
+    mixChickenPrice: '', mixMuttonPrice: '', hallGstPercent: '', foodGstPercent: '',
+  })
+  const [menuPricingSaving, setMenuPricingSaving] = useState(false)
+  const [menuPricingSaved, setMenuPricingSaved] = useState(false)
+  const [menuPricingError, setMenuPricingError] = useState('')
+
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -192,7 +200,7 @@ function AdminSettings() {
       navigate('/admin/login')
       return
     }
-    Promise.all([loadVenues(), apiGet('/settings/payment').then(setPayment)])
+    Promise.all([loadVenues(), apiGet('/settings/payment').then(setPayment), apiGet('/pricing').then(setMenuPricing)])
       .catch((err) => {
         setLoadError(err.message || 'Failed to load settings')
         if (err.message?.includes('Invalid or expired token') || err.message?.includes('Missing or invalid')) {
@@ -220,6 +228,30 @@ function AdminSettings() {
       setPaymentError(err.message || 'Failed to save payment settings')
     } finally {
       setPaymentSaving(false)
+    }
+  }
+
+  const handleMenuPricingSave = async (e) => {
+    e.preventDefault()
+    setMenuPricingSaving(true)
+    setMenuPricingError('')
+    setMenuPricingSaved(false)
+    try {
+      const updated = await apiPatch('/pricing', {
+        vegPrice: Number(menuPricing.vegPrice),
+        nonVegChickenPrice: Number(menuPricing.nonVegChickenPrice),
+        nonVegMuttonPrice: Number(menuPricing.nonVegMuttonPrice),
+        mixChickenPrice: Number(menuPricing.mixChickenPrice),
+        mixMuttonPrice: Number(menuPricing.mixMuttonPrice),
+        hallGstPercent: Number(menuPricing.hallGstPercent),
+        foodGstPercent: Number(menuPricing.foodGstPercent),
+      })
+      setMenuPricing(updated)
+      setMenuPricingSaved(true)
+    } catch (err) {
+      setMenuPricingError(err.message || 'Failed to save menu pricing')
+    } finally {
+      setMenuPricingSaving(false)
     }
   }
 
@@ -287,6 +319,69 @@ function AdminSettings() {
               <p className="text-gray-400 text-sm">Loading venues...</p>
             )}
           </div>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Menu Pricing</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Per-plate prices and GST rates shown to customers on the booking form. Update these here whenever your rates change — no developer needed.
+          </p>
+          <form onSubmit={handleMenuPricingSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 max-w-md">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Veg (₹ per plate)</label>
+              <input type="number" min="0" value={menuPricing.vegPrice}
+                onChange={(e) => { setMenuPricing({ ...menuPricing, vegPrice: e.target.value }); setMenuPricingSaved(false) }}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Non-Veg Chicken (₹)</label>
+                <input type="number" min="0" value={menuPricing.nonVegChickenPrice}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, nonVegChickenPrice: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Non-Veg Mutton (₹)</label>
+                <input type="number" min="0" value={menuPricing.nonVegMuttonPrice}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, nonVegMuttonPrice: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Mix Chicken (₹)</label>
+                <input type="number" min="0" value={menuPricing.mixChickenPrice}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, mixChickenPrice: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Mix Mutton (₹)</label>
+                <input type="number" min="0" value={menuPricing.mixMuttonPrice}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, mixMuttonPrice: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Hall GST (%)</label>
+                <input type="number" min="0" value={menuPricing.hallGstPercent}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, hallGstPercent: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Food GST (%)</label>
+                <input type="number" min="0" value={menuPricing.foodGstPercent}
+                  onChange={(e) => { setMenuPricing({ ...menuPricing, foodGstPercent: e.target.value }); setMenuPricingSaved(false) }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+            </div>
+
+            {menuPricingError && <p className="text-red-500 text-xs">{menuPricingError}</p>}
+            {menuPricingSaved && !menuPricingError && <p className="text-green-600 text-xs">Saved</p>}
+
+            <button type="submit" disabled={menuPricingSaving}
+              className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+              {menuPricingSaving ? 'Saving...' : 'Save'}
+            </button>
+          </form>
         </div>
 
         <div>
