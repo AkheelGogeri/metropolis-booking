@@ -48,6 +48,10 @@ function AdminNewBooking() {
 
   const isBusiness = form.eventCategory === 'Business Event'
   const isHallFood = form.bookingType === 'Hall + Food'
+  const selectedVenue = venues.find(v => String(v.id) === String(form.venue))
+
+  const PROJECTOR_PRICE = 1250
+  const needsProjectorCharge = isBusiness && form.projector === 'Yes' && selectedVenue?.type === 'BanquetHall'
 
   const getPlatePrice = () => {
     if (form.foodPreference === 'Veg') return 750
@@ -57,17 +61,19 @@ function AdminNewBooking() {
   }
 
   const calculatePricing = () => {
-    const selectedVenue = venues.find(v => String(v.id) === String(form.venue))
     const hallPrice = selectedVenue?.price || 0
+    const projectorCharge = needsProjectorCharge ? PROJECTOR_PRICE : 0
+    const projectorGST = projectorCharge * 0.18
+
     if (form.bookingType === 'Hall Only') {
       const hallGST = hallPrice * 0.18
-      return { total: hallPrice + hallGST }
+      return { total: hallPrice + hallGST + projectorCharge + projectorGST, projectorCharge, projectorGST }
     }
     if (form.bookingType === 'Hall + Food') {
       const plates = parseInt(form.plates) || 0
       const foodCharge = plates * getPlatePrice()
       const foodGST = foodCharge * 0.05
-      return { total: foodCharge + foodGST }
+      return { total: foodCharge + foodGST + projectorCharge + projectorGST, projectorCharge, projectorGST }
     }
     return null
   }
@@ -161,11 +167,11 @@ function AdminNewBooking() {
                     <>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Hall Charge</span>
-                        <span>₹{(venues.find(v => String(v.id) === String(form.venue))?.price || 0).toLocaleString('en-IN')}</span>
+                        <span>₹{(selectedVenue?.price || 0).toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">GST (18%)</span>
-                        <span>₹{((venues.find(v => String(v.id) === String(form.venue))?.price || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span>₹{((selectedVenue?.price || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   )}
@@ -182,6 +188,18 @@ function AdminNewBooking() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">GST (5%)</span>
                         <span>₹{(((parseInt(form.plates) || 0) * getPlatePrice()) * 0.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    </>
+                  )}
+                  {pricing.projectorCharge > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Projector & Screen</span>
+                        <span>₹{pricing.projectorCharge.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">GST (18%)</span>
+                        <span>₹{pricing.projectorGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   )}
@@ -244,6 +262,9 @@ function AdminNewBooking() {
                         </button>
                       ))}
                     </div>
+                    {needsProjectorCharge && (
+                      <p className="text-xs text-amber-600 mt-2">+ ₹{PROJECTOR_PRICE.toLocaleString('en-IN')} + 18% GST for projector & screen setup</p>
+                    )}
                   </div>
                 </div>
               )}

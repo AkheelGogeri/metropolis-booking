@@ -273,7 +273,12 @@ function AdminSettings() {
         )}
 
         <div>
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Venue Photos & Pricing</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Venue Photos & Pricing</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Add up to 6 photos per venue — customers will see them as a slideshow on the website.
+            Click <span className="font-medium text-gray-700">+ Add photos</span> to choose files, the <span className="font-medium text-gray-700">×</span> on a photo to remove it,
+            then click <span className="font-medium text-gray-700">Save</span> on that venue's card — changes don't apply until you save.
+          </p>
           <div className="space-y-4">
             {venues.map((venue) => (
               <VenueCard key={venue.id} venue={venue} onSaved={loadVenues} />
@@ -285,7 +290,10 @@ function AdminSettings() {
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Payment Settings</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Payment Settings</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            This is the UPI ID and name shown on the payment QR code customers see after booking. Update this if your UPI ID ever changes.
+          </p>
           <form onSubmit={handlePaymentSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 max-w-md">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">UPI ID</label>
@@ -317,7 +325,10 @@ function AdminSettings() {
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Security</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Security</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Change your admin login password here anytime. You'll need your current password to set a new one.
+          </p>
           <form onSubmit={handlePasswordSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 max-w-md">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Current Password</label>

@@ -65,19 +65,34 @@ function Booking() {
     return 0
   }
 
+  const PROJECTOR_PRICE = 1250
+
+  const needsProjectorCharge = isBusiness && form.projector === 'Yes' && selectedVenue?.type === 'BanquetHall'
+
   const calculatePricing = () => {
     const plates = parseInt(form.plates) || 0
     const platePrice = getPlatePrice()
     const hallPrice = selectedVenue?.price || 0
 
+    const projectorCharge = needsProjectorCharge ? PROJECTOR_PRICE : 0
+    const projectorGST = projectorCharge * 0.18
+
     if (form.bookingType === 'Hall Only') {
       const hallGST = hallPrice * 0.18
-      return { hallCharge: hallPrice, foodCharge: 0, hallGST, foodGST: 0, total: hallPrice + hallGST }
+      return {
+        hallCharge: hallPrice, foodCharge: 0, hallGST, foodGST: 0,
+        projectorCharge, projectorGST,
+        total: hallPrice + hallGST + projectorCharge + projectorGST,
+      }
     }
     if (form.bookingType === 'Hall + Food') {
       const foodCharge = plates * platePrice
       const foodGST = foodCharge * 0.05
-      return { hallCharge: 0, foodCharge, hallGST: 0, foodGST, total: foodCharge + foodGST }
+      return {
+        hallCharge: 0, foodCharge, hallGST: 0, foodGST,
+        projectorCharge, projectorGST,
+        total: foodCharge + foodGST + projectorCharge + projectorGST,
+      }
     }
     return null
   }
@@ -253,6 +268,18 @@ function Booking() {
                       </div>
                     </>
                   )}
+                  {pricing.projectorCharge > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Projector & Screen</span>
+                        <span className="font-medium">₹{pricing.projectorCharge.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">GST (18%)</span>
+                        <span className="font-medium">₹{pricing.projectorGST.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-base">
                     <span>Total</span>
                     <span className="text-amber-600">₹{pricing.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
@@ -317,6 +344,9 @@ function Booking() {
                         </button>
                       ))}
                     </div>
+                    {needsProjectorCharge && (
+                      <p className="text-xs text-amber-600 mt-2">+ ₹{PROJECTOR_PRICE.toLocaleString('en-IN')} + 18% GST for projector & screen setup</p>
+                    )}
                   </div>
                 </div>
               )}
