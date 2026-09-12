@@ -67,7 +67,7 @@ function Booking() {
 
   const PROJECTOR_PRICE = 1250
 
-  const needsProjectorCharge = isBusiness && form.projector === 'Yes' && selectedVenue?.type === 'BanquetHall'
+  const needsProjectorCharge = isBusiness && form.projector === 'Yes'
 
   const calculatePricing = () => {
     const plates = parseInt(form.plates) || 0

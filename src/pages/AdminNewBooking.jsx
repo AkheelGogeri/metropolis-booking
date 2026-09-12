@@ -51,7 +51,7 @@ function AdminNewBooking() {
   const selectedVenue = venues.find(v => String(v.id) === String(form.venue))
 
   const PROJECTOR_PRICE = 1250
-  const needsProjectorCharge = isBusiness && form.projector === 'Yes' && selectedVenue?.type === 'BanquetHall'
+  const needsProjectorCharge = isBusiness && form.projector === 'Yes'
 
   const getPlatePrice = () => {
     if (form.foodPreference === 'Veg') return 750
