@@ -30,7 +30,7 @@ const venues = [
     setupStyles: ['U Shape', 'Theater', 'Classroom', 'Cluster', 'Round Table', 'Other'],
   },
   {
-    name: 'East Court',
+    name: 'East Court Non Ac Hall',
     type: 'BanquetHall',
     capacity: 50,
     ac: false,

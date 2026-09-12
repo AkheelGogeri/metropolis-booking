@@ -5,6 +5,7 @@ import { apiGet, apiPatch, clearToken } from '../api/client'
 function AdminDashboard() {
   const navigate = useNavigate()
   const [bookings, setBookings] = useState([])
+  const [venues, setVenues] = useState([])
   const [filterStatus, setFilterStatus] = useState('All')
   const [filterVenue, setFilterVenue] = useState('All')
   const [error, setError] = useState('')
@@ -23,6 +24,7 @@ function AdminDashboard() {
           handleLogout()
         }
       })
+    apiGet('/venues').then(setVenues).catch(() => setVenues([]))
   }, [navigate])
 
   const handleLogout = () => {
@@ -138,12 +140,9 @@ function AdminDashboard() {
           <select value={filterVenue} onChange={(e) => setFilterVenue(e.target.value)}
             className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
             <option value="All">All Venues</option>
-            <option>East Court</option>
-            <option>West Court</option>
-            <option>New East Court</option>
-            <option>New West Court</option>
-            <option>Central Court</option>
-            <option>Board Room</option>
+            {venues.map((v) => (
+              <option key={v.id} value={v.name}>{v.name}</option>
+            ))}
           </select>
         </div>
 
