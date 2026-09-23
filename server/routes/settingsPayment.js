@@ -19,6 +19,14 @@ router.get('/', async (req, res, next) => {
 router.patch('/', requireAdmin, async (req, res, next) => {
   try {
     const body = req.body || {}
+
+    if (body.upiId !== undefined && !String(body.upiId).trim()) {
+      return res.status(400).json({ error: 'UPI ID cannot be empty' })
+    }
+    if (body.advanceAmount !== undefined && !(Number(body.advanceAmount) > 0)) {
+      return res.status(400).json({ error: 'Advance amount must be greater than 0' })
+    }
+
     const data = {}
     if (body.upiId !== undefined) data.upiId = body.upiId
     if (body.payeeName !== undefined) data.payeeName = body.payeeName

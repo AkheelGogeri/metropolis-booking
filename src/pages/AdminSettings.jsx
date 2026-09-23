@@ -213,9 +213,19 @@ function AdminSettings() {
 
   const handlePaymentSave = async (e) => {
     e.preventDefault()
-    setPaymentSaving(true)
     setPaymentError('')
     setPaymentSaved(false)
+
+    if (!payment.upiId.trim()) {
+      setPaymentError('UPI ID cannot be empty')
+      return
+    }
+    if (payment.advanceAmount === '' || Number(payment.advanceAmount) <= 0) {
+      setPaymentError('Advance amount must be greater than ₹0 — customers see this on the confirmation page')
+      return
+    }
+
+    setPaymentSaving(true)
     try {
       const updated = await apiPatch('/settings/payment', {
         upiId: payment.upiId,
