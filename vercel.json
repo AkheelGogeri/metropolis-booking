@@ -1,9 +1,21 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "metropolis-booking-eight.vercel.app" }],
+      "destination": "https://book.hotelmetropolishubli.in/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "metropolis-booking-eight.vercel.app" }],
       "destination": "https://book.hotelmetropolishubli.in/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "metropolis-booking-hubli-metropolis.vercel.app" }],
+      "destination": "https://book.hotelmetropolishubli.in/",
       "permanent": true
     },
     {
